@@ -10,7 +10,10 @@ WORKDIR /code
 
 # Install dependencies
 COPY ./requirements.txt .
+RUN pip install drf-yasg
+
 RUN pip install -r requirements.txt
+
 
 EXPOSE 8000
 # Copy project
