@@ -7,9 +7,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .models import User
 from .serializers import UserSerializer
+from rest_framework.authtoken.models import Token
 
 @api_view(['POST'])
 def user_registration(request):
+    print("request"*88, request)
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         referral_code = request.data.get('referral_code')
@@ -18,9 +20,15 @@ def user_registration(request):
             if referred_by:
                 # Logic to award points to the user who referred this user
                 pass
-        serializer.save()
-        return Response({'id': serializer.data['id'], 'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        user = serializer.save()
+        password = request.data.get('password')
+        if password:
+            user.set_password(password)
+            user.save()
+        token = Token.objects.create(user=user)
+        return Response({'id': serializer.data['id'], 'message': 'User registered successfully', 'token': token}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
